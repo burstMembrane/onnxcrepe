@@ -6,25 +6,49 @@
 # ]
 # ///
 
-# https://github.com/yqzhishen/onnxcrepe/releases/download/v1.1.0/full.onnx
-# https://github.com/yqzhishen/onnxcrepe/releases/download/v1.1.0/large.onnx
-# https://github.com/yqzhishen/onnxcrepe/releases/download/v1.1.0/medium.onnx
-# https://github.com/yqzhishen/onnxcrepe/releases/download/v1.1.0/small.onnx
-#https://github.com/yqzhishen/onnxcrepe/releases/download/v1.1.0/tiny.onnx
+"""
+Standalone script to download all ONNX CREPE models.
+This script uses the new onnxcrepe.download module for consistent model management.
+"""
 
-import requests
-import tqdm
+import sys
 from pathlib import Path
 
-models_dir = Path("onnxcrepe/assets")
-models_dir.mkdir(exist_ok=True)
+# Add the project root to the path so we can import onnxcrepe
+sys.path.insert(0, str(Path(__file__).parent))
 
-BASE_URL = "https://github.com/yqzhishen/onnxcrepe/releases/download/v1.1.0"
+try:
+    from onnxcrepe.download import download_all_models, get_cache_dir
+except ImportError:
+    print("Error: Could not import onnxcrepe.download module.")
+    print("Make sure you're running this script from the project root directory.")
+    sys.exit(1)
 
-for model_name in tqdm.tqdm(["full", "large", "medium", "small", "tiny"], desc="Downloading models"):
-    url = f"{BASE_URL}/{model_name}.onnx"
 
-    if not Path(models_dir / f"{model_name}.onnx").exists():    
-        response = requests.get(url)
-        with open(models_dir / f"{model_name}.onnx", "wb") as f:
-            f.write(response.content)
+def main():
+    """Download all available CREPE models."""
+    print("Downloading all ONNX CREPE models...")
+    print(f"Cache directory: {get_cache_dir()}")
+    print()
+    
+    try:
+        model_paths = download_all_models(verbose=True)
+        
+        print(f"\nDownload completed. {len(model_paths)} models available:")
+        for model, path in model_paths.items():
+            print(f"  {model}: {path}")
+        
+        if len(model_paths) == 0:
+            print("Warning: No models were successfully downloaded.")
+            return 1
+            
+    except Exception as e:
+        print(f"Error during download: {e}")
+        return 1
+    
+    return 0
+
+
+if __name__ == "__main__":
+    exit_code = main()
+    sys.exit(exit_code)
