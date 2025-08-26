@@ -5,6 +5,7 @@ import numpy as np
 import tqdm
 
 import onnxcrepe
+from line_profiler import profile
 
 __all__ = ['CENTS_PER_BIN',
            'MAX_FMAX',
@@ -38,7 +39,7 @@ UNVOICED = np.nan
 # Crepe pitch prediction
 ###############################################################################
 
-
+@profile
 def predict(session,
             audio,
             sample_rate,
@@ -79,21 +80,52 @@ def predict(session,
                                 [shape=(1, 1 + int(time // precision))])
     """
 
-    results = []
-
-    # Preprocess audio
-    generator = preprocess(audio,
+    # Convert audio to numpy array if it's a torch tensor
+    if hasattr(audio, 'numpy'):
+        # It's a torch tensor
+        audio_np = audio.numpy().squeeze()  # Remove batch dimension
+    elif isinstance(audio, np.ndarray):
+        audio_np = audio.squeeze() if audio.ndim > 1 else audio
+    else:
+        audio_np = np.array(audio).squeeze()
+    
+    # Preprocess audio - collect all batches
+    generator = preprocess(audio_np,
                            sample_rate,
                            precision,
                            batch_size,
                            pad)
+    
+    all_frames = []
     for frames in generator:
-
+        all_frames.append(frames)
+    
+    # Process all frames at once if they fit in one batch
+    if len(all_frames) == 1:
+        frames = all_frames[0]
         # Infer independent probabilities for each pitch bin
         probabilities = infer(session, frames)  # shape=(batch, 360)
-
         probabilities = probabilities.transpose(1, 0)[None]  # shape=(1, 360, batch)
-
+        
+        # Convert probabilities to F0 and periodicity
+        result = postprocess(probabilities,
+                             fmin,
+                             fmax,
+                             decoder,
+                             return_periodicity)
+        
+        if return_periodicity:
+            return result[0], result[1]
+        else:
+            return result
+    
+    # Process multiple batches
+    results = []
+    for frames in all_frames:
+        # Infer independent probabilities for each pitch bin
+        probabilities = infer(session, frames)  # shape=(batch, 360)
+        probabilities = probabilities.transpose(1, 0)[None]  # shape=(1, 360, batch)
+        
         # Convert probabilities to F0 and periodicity
         result = postprocess(probabilities,
                              fmin,
@@ -295,7 +327,7 @@ def predict_from_files_to_files(session,
 # Components for step-by-step prediction
 ###############################################################################
 
-
+@profile
 def preprocess(audio,
                sample_rate,
                precision=None,
@@ -338,8 +370,9 @@ def preprocess(audio,
 
     # Default to running all frames in a single batch
     batch_size = total_frames if batch_size is None else batch_size
-
+    
     # Generate batches
+    all_frames = []
     for i in range(0, total_frames, batch_size):
         # Batch indices
         start = max(0, int(i * hop_length))
@@ -358,7 +391,9 @@ def preprocess(audio,
         # (https://github.com/maxrmorrison/torchcrepe/blob/master/torchcrepe/core.py#L692)
         # are wrapped into the ONNX models for hardware acceleration.
 
-        yield frames
+        all_frames.append(frames)
+    
+    return all_frames
 
 
 def infer(session, frames):
@@ -376,7 +411,7 @@ def infer(session, frames):
     # Apply model
     return session.run(None, {'frames': frames})[0]
 
-
+@profile
 def postprocess(probabilities,
                 fmin=0.,
                 fmax=MAX_FMAX,
