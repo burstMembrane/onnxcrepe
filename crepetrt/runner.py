@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unified inference runner for onnxcrepe."""
+"""Unified inference runner for crepetrt."""
 
 from __future__ import annotations
 import os
@@ -13,9 +13,9 @@ from tqdm import tqdm
 import logging
 from joblib import Parallel, delayed
 
-import onnxcrepe
-from onnxcrepe.session import CrepeInferenceSession
-from onnxcrepe.utils import hash_model_path, check_ld_library_path
+import crepetrt
+from crepetrt.session import CrepeInferenceSession
+from crepetrt.utils import hash_model_path, check_ld_library_path
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class CrepeRunner:
         providers: Optional[list] = None,
         precision: float = 10.0,
         fmin: float = 50.0,
-        fmax: float = onnxcrepe.MAX_FMAX,
+        fmax: float = crepetrt.MAX_FMAX,
         decoder: str = "weighted_viterbi",
         batch_size: int = 32,
         pad: bool = True,
@@ -83,10 +83,10 @@ class CrepeRunner:
     def _get_decoder(self, decoder_name: str):
         """Get decoder function by name."""
         decoders = {
-            'argmax': onnxcrepe.decode.argmax,
-            'weighted_argmax': onnxcrepe.decode.weighted_argmax,
-            'viterbi': onnxcrepe.decode.viterbi,
-            'weighted_viterbi': onnxcrepe.decode.weighted_viterbi,
+            'argmax': crepetrt.decode.argmax,
+            'weighted_argmax': crepetrt.decode.weighted_argmax,
+            'viterbi': crepetrt.decode.viterbi,
+            'weighted_viterbi': crepetrt.decode.weighted_viterbi,
         }
         
         if decoder_name not in decoders:
@@ -208,7 +208,7 @@ class CrepeRunner:
             audio = audio.astype(np.float32)
         
         # Predict
-        result = onnxcrepe.predict(
+        result = crepetrt.predict(
             self.session,
             audio,
             sample_rate,

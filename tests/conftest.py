@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-import onnxcrepe
+import crepetrt
 
 
 ###############################################################################
@@ -26,9 +26,9 @@ def activation_tiny():
 @pytest.fixture(scope='session')
 def audio():
     """Retrieve the test audio"""
-    audio, sample_rate = onnxcrepe.load.audio(path('test.wav'))
-    if sample_rate != onnxcrepe.SAMPLE_RATE:
-        audio = onnxcrepe.resample(audio, sample_rate)
+    audio, sample_rate = crepetrt.load.audio(path('test.wav'))
+    if sample_rate != crepetrt.SAMPLE_RATE:
+        audio = crepetrt.resample(audio, sample_rate)
     return audio
 
 

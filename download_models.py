@@ -8,19 +8,19 @@
 
 """
 Standalone script to download all ONNX CREPE models.
-This script uses the new onnxcrepe.download module for consistent model management.
+This script uses the new crepetrt.download module for consistent model management.
 """
 
 import sys
 from pathlib import Path
 
-# Add the project root to the path so we can import onnxcrepe
+# Add the project root to the path so we can import crepetrt
 sys.path.insert(0, str(Path(__file__).parent))
 
 try:
-    from onnxcrepe.download import download_all_models, get_cache_dir
+    from crepetrt.download import download_all_models, get_cache_dir
 except ImportError:
-    print("Error: Could not import onnxcrepe.download module.")
+    print("Error: Could not import crepetrt.download module.")
     print("Make sure you're running this script from the project root directory.")
     sys.exit(1)
 

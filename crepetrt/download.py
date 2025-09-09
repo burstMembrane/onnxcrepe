@@ -7,7 +7,7 @@ import requests
 import tqdm
 
 
-BASE_URL = "https://github.com/yqzhishen/onnxcrepe/releases/download/v1.1.0"
+BASE_URL = "https://github.com/yqzhishen/crepetrt/releases/download/v1.1.0"
 AVAILABLE_MODELS = ["full", "large", "medium", "small", "tiny"]
 
 # Thread lock for safe concurrent downloading
@@ -20,12 +20,12 @@ def get_cache_dir() -> Path:
     Returns:
         Path to cache directory (creates if doesn't exist)
     """
-    cache_dir = os.environ.get('ONNXCREPE_CACHE_DIR')
+    cache_dir = os.environ.get('crepetrt_CACHE_DIR')
     if cache_dir:
         cache_path = Path(cache_dir)
     else:
-        # Default to ~/.cache/onnxcrepe
-        cache_path = Path.home() / '.cache' / 'onnxcrepe'
+        # Default to ~/.cache/crepetrt
+        cache_path = Path.home() / '.cache' / 'crepetrt'
     
     cache_path.mkdir(parents=True, exist_ok=True)
     return cache_path

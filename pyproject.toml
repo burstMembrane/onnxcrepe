@@ -1,7 +1,7 @@
 [project]
-name = "onnxcrepe"
+name = "crepetrt"
 version = "0.1.0"
-description = "Add your description here"
+description = "Fast trt inference for onnx CREPE models"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -29,21 +29,26 @@ dependencies = [
     "soundfile>=0.13.1",
 ]
 [project.scripts]
-onnxcrepe = "onnxcrepe.inference:app"
-onnxcrepe-serve = "onnxcrepe.inference:serve"
-onnxcrepe-predict = "onnxcrepe.inference:predict"
+crepetrt = "crepetrt.inference:app"
+crepetrt-serve = "crepetrt.inference:serve"
+crepetrt-predict = "crepetrt.inference:predict"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["onnxcrepe*"]
+include = ["crepetrt*"]
 
 [tool.uv.sources]
 torbi = { git = "https://github.com/korguchi/torbi.git" }
 
 [dependency-groups]
-benchmark = [
-    "torchcrepe>=0.0.24",
+benchmark = ["torchcrepe>=0.0.24"]
+dev = [
+    "line-profiler>=5.0.0",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 dev = [
     "ipykernel>=6.30.1",
     "line-profiler>=5.0.0",

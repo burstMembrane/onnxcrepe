@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Utility functions for onnxcrepe."""
+"""Utility functions for crepetrt."""
 
 import os
 import hashlib

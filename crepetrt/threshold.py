@@ -1,6 +1,6 @@
 import numpy as np
 
-import onnxcrepe
+import crepetrt
 
 
 ###############################################################################
@@ -19,7 +19,7 @@ class At:
         pitch = pitch.copy()
 
         # Threshold
-        pitch[periodicity < self.value] = onnxcrepe.UNVOICED
+        pitch[periodicity < self.value] = crepetrt.UNVOICED
         return pitch
 
 
@@ -47,7 +47,7 @@ class Hysteresis:
         periodicity = periodicity.flatten()
 
         # Ignore confidently unvoiced pitch
-        pitch[periodicity < self.lower_bound] = onnxcrepe.UNVOICED
+        pitch[periodicity < self.lower_bound] = crepetrt.UNVOICED
 
         # Whiten pitch
         mean, std = np.nanmean(pitch), np.nanstd(pitch)
@@ -83,7 +83,7 @@ class Hysteresis:
                 i += 1
 
         # Remove pitch with low periodicity
-        pitch[periodicity < threshold] = onnxcrepe.UNVOICED
+        pitch[periodicity < threshold] = crepetrt.UNVOICED
 
         # Unwhiten
         pitch = pitch * std + mean
@@ -112,7 +112,7 @@ class Silence:
     def __call__(self,
                  periodicity,
                  audio,
-                 sample_rate=onnxcrepe.SAMPLE_RATE,
+                 sample_rate=crepetrt.SAMPLE_RATE,
                  precision=None,
                  pad=True):
         # Don't modify in-place
@@ -120,7 +120,7 @@ class Silence:
 
         # Compute loudness
         hop_length = sample_rate * precision // 1000
-        loudness = onnxcrepe.loudness.a_weighted(
+        loudness = crepetrt.loudness.a_weighted(
             audio, sample_rate, hop_length, pad)
 
         # Threshold silence

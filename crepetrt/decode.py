@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import torbi
 
-import onnxcrepe
+import crepetrt
 ###############################################################################
 # Probability sequence decoding methods
 ###############################################################################
@@ -14,7 +14,7 @@ def argmax(logits):
     bins = logits.argmax(axis=1)
 
     # Convert to frequency in Hz
-    return bins, onnxcrepe.convert.bins_to_frequency(bins)
+    return bins, crepetrt.convert.bins_to_frequency(bins)
 
 
 def weighted_argmax(logits: np.ndarray):
@@ -101,7 +101,7 @@ def viterbi(logits, transition=None, device="cuda"):
     # Convert back to numpy
     bins_np = bins.cpu().numpy()
     
-    frequencies = onnxcrepe.convert.bins_to_frequency(bins_np)
+    frequencies = crepetrt.convert.bins_to_frequency(bins_np)
     
     return bins_np, frequencies
 
@@ -127,7 +127,7 @@ def _apply_weights(logits, bins):
 
     # Construct weights
     if not hasattr(_apply_weights, 'weights'):
-        weights = onnxcrepe.convert.bins_to_cents(np.arange(360))
+        weights = crepetrt.convert.bins_to_cents(np.arange(360))
         _apply_weights.weights = weights[None, :, None]
 
     # Convert to probabilities (ReLU)
@@ -140,11 +140,11 @@ def _apply_weights(logits, bins):
     zero_mask = prob_sums == 0
     if np.any(zero_mask):
         # Fall back to bin centers for zero probability frames
-        bin_cents = onnxcrepe.convert.bins_to_cents(bins)
+        bin_cents = crepetrt.convert.bins_to_cents(bins)
         cents = np.where(zero_mask, bin_cents, 
                         (_apply_weights.weights * probs).sum(axis=1) / prob_sums)
     else:
         cents = (_apply_weights.weights * probs).sum(axis=1) / prob_sums
 
     # Convert to frequency in Hz
-    return onnxcrepe.convert.cents_to_frequency(cents)
+    return crepetrt.convert.cents_to_frequency(cents)

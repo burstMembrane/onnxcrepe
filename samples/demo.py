@@ -2,8 +2,8 @@ import numpy as np
 import json
 import time
 
-import onnxcrepe
-from onnxcrepe.session import CrepeInferenceSession
+import crepetrt
+from crepetrt.session import CrepeInferenceSession
 from pathlib import Path
 import onnxruntime as ort
 from line_profiler import profile
@@ -60,7 +60,7 @@ def build_session(device_id=0, use_optimized_model=True, engine_cache_path="./tr
     
     cudnn_options = {"device_id": device_id}
     
-    return onnxcrepe.CrepeInferenceSession(
+    return crepetrt.CrepeInferenceSession(
         model="full", 
         sess_options=so, 
         providers=providers, 
@@ -153,7 +153,7 @@ def main():
     
     # Time the prediction
     start_time = time.time()
-    pitch, periodicity = onnxcrepe.predict(session, audio, sr, precision=args.precision, fmin=args.fmin, fmax=args.fmax, batch_size=args.batch_size, return_periodicity=True, decoder=onnxcrepe.decode.weighted_viterbi)
+    pitch, periodicity = crepetrt.predict(session, audio, sr, precision=args.precision, fmin=args.fmin, fmax=args.fmax, batch_size=args.batch_size, return_periodicity=True, decoder=crepetrt.decode.weighted_viterbi)
     inference_time = time.time() - start_time
     
     # Calculate realtime factor (how many times faster than realtime)

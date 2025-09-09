@@ -1,4 +1,4 @@
-# onnxcrepe
+# crepetrt
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ONNX deployment of the CREPE [1] pitch tracker. The provided model weights and most of the codes in this repository were converted and migrated from the original TensorFlow implementation [here](https://github.com/marl/crepe/) and Max Morrison's [torchcrepe](https://github.com/maxrmorrison/torchcrepe), a PyTorch implementation of CREPE.
@@ -6,7 +6,7 @@ ONNX deployment of the CREPE [1] pitch tracker. The provided model weights and m
 
 ## Usage
 
-Download model weights from [releases](https://github.com/yqzhishen/onnxcrepe/releases) and put them into the `onnxcrepe/assets/` directory. See demo [here](samples/demo.py).
+Download model weights from [releases](https://github.com/yqzhishen/crepetrt/releases) and put them into the `crepetrt/assets/` directory. See demo [here](samples/demo.py).
 
 Documentation of this repository is still a work in progress and is comming soon.
 

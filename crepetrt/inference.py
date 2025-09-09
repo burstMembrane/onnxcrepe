@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Main CLI interface for onnxcrepe using Typer."""
+"""Main CLI interface for crepetrt using Typer."""
 
 from pathlib import Path
 from typing import Optional, List
@@ -12,9 +12,9 @@ import typer
 import onnxruntime as ort
 from coloredlogs import install
 
-from onnxcrepe.runner import CrepeRunner
-from onnxcrepe.utils import check_ld_library_path, hash_model_path
-import onnxcrepe
+from crepetrt.runner import CrepeRunner
+from crepetrt.utils import check_ld_library_path, hash_model_path
+import crepetrt
 import line_profiler
 # Configure logging to always use stderr
 logging.basicConfig(
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 # Configure coloredlogs to use stderr
 install(level="INFO", stream=sys.stderr)
 
-app = typer.Typer(help="OnnxCrepe: Real-time pitch detection with ONNX/TensorRT")
+app = typer.Typer(help="crepetrt: Real-time pitch detection with ONNX/TensorRT")
 
 
 @app.command("predict")
@@ -38,7 +38,7 @@ def predict(
     model: str = typer.Option("full", "-m", "--model", help="Model capacity (full/large/medium/small/tiny)"),
     precision: float = typer.Option(10.0, "--precision", help="Time precision in milliseconds"),
     fmin: float = typer.Option(50.0, "--fmin", help="Minimum frequency in Hz"),
-    fmax: float = typer.Option(onnxcrepe.MAX_FMAX, "--fmax", help="Maximum frequency in Hz"),
+    fmax: float = typer.Option(crepetrt.MAX_FMAX, "--fmax", help="Maximum frequency in Hz"),
     decoder: str = typer.Option("weighted_viterbi", "-d", "--decoder", help="Decoder type"),
     batch_size: int = typer.Option(32, "-b", "--batch", help="Batch size"),
     pad: bool = typer.Option(True, "--pad/--no-pad", help="Zero-pad audio"),
@@ -47,7 +47,7 @@ def predict(
     no_trt: bool = typer.Option(False, "--no-trt", help="Disable TensorRT"),
     no_cuda: bool = typer.Option(False, "--no-cuda", help="Disable CUDA"),
     trt_cache: Path = typer.Option(
-        Path.home() / ".cache/onnxcrepe/trt_engine_cache",
+        Path.home() / ".cache/crepetrt/trt_engine_cache",
         "--trt-cache",
         help="TensorRT cache directory"
     ),
@@ -169,18 +169,18 @@ def predict(
 @app.command("serve")
 def serve(
     model: str = typer.Option("full", "-m", "--model", help="Model capacity"),
-    socket_path: str = typer.Option("/tmp/onnxcrepe.sock", "-s", "--socket", help="UNIX socket path"),
+    socket_path: str = typer.Option("/tmp/crepetrt.sock", "-s", "--socket", help="UNIX socket path"),
     host: Optional[str] = typer.Option(None, "-h", "--host", help="Host to bind to (overrides socket)"),
     port: Optional[int] = typer.Option(None, "-p", "--port", help="Port to bind to (overrides socket)"),
     precision: float = typer.Option(10.0, "--precision", help="Time precision in milliseconds"),
     fmin: float = typer.Option(50.0, "--fmin", help="Minimum frequency in Hz"),
-    fmax: float = typer.Option(onnxcrepe.MAX_FMAX, "--fmax", help="Maximum frequency in Hz"),
+    fmax: float = typer.Option(crepetrt.MAX_FMAX, "--fmax", help="Maximum frequency in Hz"),
     decoder: str = typer.Option("weighted_viterbi", "-d", "--decoder", help="Decoder type"),
     batch_size: int = typer.Option(32, "-b", "--batch", help="Batch size"),
     no_trt: bool = typer.Option(False, "--no-trt", help="Disable TensorRT"),
     no_cuda: bool = typer.Option(False, "--no-cuda", help="Disable CUDA"),
     trt_cache: Path = typer.Option(
-        Path.home() / ".cache/onnxcrepe/trt_engine_cache",
+        Path.home() / ".cache/crepetrt/trt_engine_cache",
         "--trt-cache",
         help="TensorRT cache directory"
     ),
@@ -188,7 +188,7 @@ def serve(
     optimized_model_filepath: Optional[str] = typer.Option(None, "--optimized-model-filepath", help="Path to optimized model"),
 ):
     """Serve the model over HTTP or UNIX socket."""
-    from onnxcrepe.server import ModelServer, create_app, run_server
+    from crepetrt.server import ModelServer, create_app, run_server
     
     # Check LD_LIBRARY_PATH
     if not no_trt or not no_cuda:

@@ -1,7 +1,7 @@
 
 CMD_ONE="python -m torchcrepe --audio_files testdata/test_60s.wav --output_files f0 --gpu 0"
 CMD_TWO="curl -X POST \
-    --unix-socket /tmp/onnxcrepe.sock \
+    --unix-socket /tmp/crepetrt.sock \
     http://localhost/predict \
     -F 'audio_file=@testdata/test_60s.wav' \
     -F 'return_periodicity=true' \

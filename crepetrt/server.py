@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""FastAPI server for onnxcrepe inference."""
+"""FastAPI server for crepetrt inference."""
 
 import asyncio
 import tempfile
@@ -17,7 +17,7 @@ import uvicorn
 import soundfile as sf
 import numpy as np
 
-from onnxcrepe.runner import CrepeRunner
+from crepetrt.runner import CrepeRunner
 
 logger = logging.getLogger(__name__)
 
@@ -191,7 +191,7 @@ def create_app(model_server: ModelServer) -> FastAPI:
         FastAPI application
     """
     app = FastAPI(
-        title="OnnxCrepe Server",
+        title="crepetrt Server",
         version="0.1.0",
         description="Real-time pitch detection with ONNX/TensorRT"
     )
@@ -336,7 +336,7 @@ async def run_server(
         await server.serve()
     else:
         # Run on UNIX socket
-        socket_path = socket_path or "/tmp/onnxcrepe.sock"
+        socket_path = socket_path or "/tmp/crepetrt.sock"
         
         # Remove existing socket if it exists
         if os.path.exists(socket_path):

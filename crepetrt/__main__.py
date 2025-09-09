@@ -4,8 +4,8 @@ import os
 
 import onnxruntime as ort
 
-import onnxcrepe
-from onnxcrepe.session import CrepeInferenceSession
+import crepetrt
+from crepetrt.session import CrepeInferenceSession
 
 
 ###############################################################################
@@ -80,13 +80,13 @@ def main():
 
     # Get decoder
     if config['decoder'] == 'argmax':
-        decoder = onnxcrepe.decode.argmax
+        decoder = crepetrt.decode.argmax
     elif config['decoder'] == 'weighted_argmax':
-        decoder = onnxcrepe.decode.weighted_argmax
+        decoder = crepetrt.decode.weighted_argmax
     elif config['decoder'] == 'viterbi':
-        decoder = onnxcrepe.decode.viterbi
+        decoder = crepetrt.decode.viterbi
     elif config['decoder'] == 'weighted_viterbi':
-        decoder = onnxcrepe.decode.weighted_viterbi
+        decoder = crepetrt.decode.weighted_viterbi
     else:
         raise NotImplementedError('Decoder must be \'argmax\', \'weighted_argmax\', \'viterbi\' or \'weighted_viterbi\'.')
 
@@ -114,14 +114,14 @@ def main():
     session = CrepeInferenceSession(model=config['model'], sess_options=options, providers=providers)
 
     # Infer pitch and save to disk
-    onnxcrepe.predict_from_files_to_files(session,
+    crepetrt.predict_from_files_to_files(session,
                                           args.audio_files,
                                           args.output_directory,
                                           args.save_periodicity,
                                           args.format,
                                           config['precision'],
                                           config['fmin'],
-                                          config['fmax'] if config['fmax'] is not None else onnxcrepe.MAX_FMAX,
+                                          config['fmax'] if config['fmax'] is not None else crepetrt.MAX_FMAX,
                                           decoder,
                                           config['batch_size'],
                                           config['pad'])

@@ -4,7 +4,7 @@ import librosa
 import numpy as np
 import tqdm
 
-import onnxcrepe
+import crepetrt
 from line_profiler import profile
 
 __all__ = ['CENTS_PER_BIN',
@@ -46,14 +46,14 @@ def predict(session,
             precision=None,
             fmin=50.,
             fmax=MAX_FMAX,
-            decoder=onnxcrepe.decode.weighted_viterbi,
+            decoder=crepetrt.decode.weighted_viterbi,
             return_periodicity=False,
             batch_size=None,
             pad=True):
     """Performs pitch estimation
 
     Arguments
-        session (onnxcrepe.CrepeInferenceSession)
+        session (crepetrt.CrepeInferenceSession)
             An onnxruntime.InferenceSession holding the CREPE model
         audio (numpy.ndarray [shape=(n_samples,)])
             The audio signal
@@ -153,14 +153,14 @@ def predict_from_file(session,
                       precision=None,
                       fmin=50.,
                       fmax=MAX_FMAX,
-                      decoder=onnxcrepe.decode.weighted_viterbi,
+                      decoder=crepetrt.decode.weighted_viterbi,
                       return_periodicity=False,
                       batch_size=None,
                       pad=True):
     """Performs pitch estimation from file on disk
 
     Arguments
-        session (onnxcrepe.CrepeInferenceSession)
+        session (crepetrt.CrepeInferenceSession)
             An onnxruntime.InferenceSession holding the CREPE model
         audio_file (string)
             The file to perform pitch tracking on
@@ -189,7 +189,7 @@ def predict_from_file(session,
                                 [shape=(1, 1 + int(time // precision))])
     """
     # Load audio
-    audio, sample_rate = onnxcrepe.load.audio(audio_file)
+    audio, sample_rate = crepetrt.load.audio(audio_file)
 
     # Predict
     return predict(session, audio, sample_rate, precision, fmin, fmax, decoder, return_periodicity, batch_size, pad)
@@ -203,13 +203,13 @@ def predict_from_file_to_file(session,
                               precision=None,
                               fmin=50.,
                               fmax=MAX_FMAX,
-                              decoder=onnxcrepe.decode.weighted_viterbi,
+                              decoder=crepetrt.decode.weighted_viterbi,
                               batch_size=None,
                               pad=True):
     """Performs pitch estimation from file on disk
 
     Arguments
-        session (onnxcrepe.CrepeInferenceSession)
+        session (crepetrt.CrepeInferenceSession)
             An onnxruntime.InferenceSession holding the CREPE model
         audio_file (string)
             The file to perform pitch tracking on
@@ -279,13 +279,13 @@ def predict_from_files_to_files(session,
                                 precision=None,
                                 fmin=50.,
                                 fmax=MAX_FMAX,
-                                decoder=onnxcrepe.decode.weighted_viterbi,
+                                decoder=crepetrt.decode.weighted_viterbi,
                                 batch_size=None,
                                 pad=True):
     """Performs pitch estimation from files on disk without reloading model
 
     Arguments
-        session (onnxcrepe.CrepeInferenceSession)
+        session (crepetrt.CrepeInferenceSession)
             An onnxruntime.InferenceSession holding the CREPE model
         audio_files (list[string])
             The files to perform pitch tracking on
@@ -316,7 +316,7 @@ def predict_from_files_to_files(session,
     """
 
     # Setup iterator
-    iterator = tqdm.tqdm(audio_files, desc='onnxcrepe', dynamic_ncols=True)
+    iterator = tqdm.tqdm(audio_files, desc='crepetrt', dynamic_ncols=True)
     for audio_file in iterator:
         # Predict a file
         predict_from_file_to_file(session, audio_file, output_directory, save_periodicity, format, precision, fmin,
@@ -400,7 +400,7 @@ def infer(session, frames):
     """Forward pass through the model
 
     Arguments
-        session (onnxcrepe.CrepeInferenceSession)
+        session (crepetrt.CrepeInferenceSession)
             An onnxruntime.InferenceSession holding the CREPE model
         frames (numpy.ndarray [shape=(time / precision, 1024)])
             The network input
@@ -415,7 +415,7 @@ def infer(session, frames):
 def postprocess(probabilities,
                 fmin=0.,
                 fmax=MAX_FMAX,
-                decoder=onnxcrepe.decode.weighted_viterbi,
+                decoder=crepetrt.decode.weighted_viterbi,
                 return_periodicity=False):
     """Convert model output to F0 and periodicity
 
@@ -436,8 +436,8 @@ def postprocess(probabilities,
         periodicity (numpy.ndarray [shape=(1, 1 + int(time // precision))])
     """
     # Convert frequency range to pitch bin range
-    minidx = onnxcrepe.convert.frequency_to_bins(fmin)
-    maxidx = onnxcrepe.convert.frequency_to_bins(fmax, np.ceil)
+    minidx = crepetrt.convert.frequency_to_bins(fmin)
+    maxidx = crepetrt.convert.frequency_to_bins(fmax, np.ceil)
 
     # Remove frequencies outside allowable range
     probabilities[:, :minidx] = float('-inf')
@@ -474,4 +474,4 @@ def periodicity(probabilities, bins):
 
 def resample(audio, sample_rate):
     """Resample audio"""
-    return librosa.resample(audio, orig_sr=sample_rate, target_sr=onnxcrepe.SAMPLE_RATE)
+    return librosa.resample(audio, orig_sr=sample_rate, target_sr=crepetrt.SAMPLE_RATE)

@@ -1,5 +1,5 @@
 import numpy as np
-import onnxcrepe
+import crepetrt
 
 
 ###############################################################################
@@ -9,8 +9,8 @@ import onnxcrepe
 
 def test_infer_tiny(frames, activation_tiny):
     """Test that inference is the same as the original crepe"""
-    activation = onnxcrepe.infer(
-        onnxcrepe.CrepeInferenceSession('tiny', providers=['CPUExecutionProvider']), frames)
+    activation = crepetrt.infer(
+        crepetrt.CrepeInferenceSession('tiny', providers=['CPUExecutionProvider']), frames)
     diff = np.abs(activation - activation_tiny)
 
     # ONNX output are not strictly the same as the original CREPE
@@ -19,8 +19,8 @@ def test_infer_tiny(frames, activation_tiny):
 
 def test_infer_full(frames, activation_full):
     """Test that inference is the same as the original crepe"""
-    activation = onnxcrepe.infer(
-        onnxcrepe.CrepeInferenceSession('full', providers=['CPUExecutionProvider']), frames)
+    activation = crepetrt.infer(
+        crepetrt.CrepeInferenceSession('full', providers=['CPUExecutionProvider']), frames)
     diff = np.abs(activation - activation_full)
 
     # ONNX output are not strictly the same as the original CREPE

@@ -1,6 +1,6 @@
 import numpy as np
 
-import onnxcrepe
+import crepetrt
 
 
 ###############################################################################
@@ -9,12 +9,12 @@ import onnxcrepe
 
 
 def test_at():
-    """Test onnxcrepe.threshold.At"""
+    """Test crepetrt.threshold.At"""
     input_pitch = np.array([100., 110., 120., 130., 140.])
     periodicity = np.array([.19, .22, .25, .17, .30])
 
     # Perform thresholding
-    output_pitch = onnxcrepe.threshold.At(.20)(input_pitch, periodicity)
+    output_pitch = crepetrt.threshold.At(.20)(input_pitch, periodicity)
 
     # Ensure thresholding is not in-place
     assert not (input_pitch == output_pitch).all()
