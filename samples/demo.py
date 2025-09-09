@@ -16,25 +16,58 @@ import librosa
 import librosa.display
 from joblib import Memory
 import argparse
+from line_profiler import LineProfiler
 
-
-def build_session(device_id=0):
+@profile
+def build_session(device_id=0, use_optimized_model=True, engine_cache_path="./trt_engines", model_path=None):
+    """Build optimized CREPE inference session for cold-start performance."""
+    # Preload DLLs for faster initialization
+    try:
+        ort.preload_dlls()
+    except (AttributeError, Exception):
+        # preload_dlls might not be available in all versions
+        pass
+    
+    # Optimize session options for cold-start
     so = ort.SessionOptions()
-    so.intra_op_num_threads = 0
+    so.intra_op_num_threads = 0  # Let ORT decide based on hardware
     so.inter_op_num_threads = 0
+    
+    # Enable memory optimizations
+    so.enable_mem_pattern = True
+    so.enable_mem_reuse = True
+    
     providers = ["TensorrtExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider"]
+    
+    # Configure TensorRT for pre-built engines and cold-start optimization
     trt_options = {
-    "device_id": device_id,
-    "trt_engine_cache_enable": True,
-    "trt_engine_cache_path": "./trt_cache",   # folder to store compiled TRT engines
-    "trt_timing_cache_enable": True,
-    "trt_timing_cache_path": "./trt_cache",   # timing info speeds up future builds
-    "trt_fp16_enable": True,
-   
+        "device_id": device_id,
+        "trt_engine_cache_enable": True,
+        "trt_engine_cache_path": engine_cache_path,
+        "trt_timing_cache_enable": True,
+        "trt_timing_cache_path": engine_cache_path,
+        "trt_fp16_enable": True,
+        # Optimize for cold-start performance
+        "trt_builder_optimization_level": 3,  # Balance between build time and performance
+        "trt_max_workspace_size": str(20 * 1024 * 1024 * 1024),  # 8GB workspace
     }
+    
+    # Configure for pre-built engine loading if cache exists
+    cache_path = Path(engine_cache_path)
+    if cache_path.exists():
+        trt_options["trt_ep_context_file_path"] = engine_cache_path
+        trt_options["trt_ep_context_embed_mode"] = 0  # Embed cache path (recommended)
+    
     cudnn_options = {"device_id": device_id}
+    
     return onnxcrepe.CrepeInferenceSession(
-        model="full", sess_options=so, providers=providers, provider_options=[trt_options, cudnn_options, {}]
+        model="full", 
+        sess_options=so, 
+        providers=providers, 
+        provider_options=[trt_options, cudnn_options, {}],
+        use_optimized_model=use_optimized_model,
+        engine_cache_path=engine_cache_path,
+        model_path=model_path
     )
 
 def plot_results(pitch, periodicity, audio, sr, precision, fmin, fmax, output_path):
@@ -101,6 +134,7 @@ def main():
     parser.add_argument("--device_id", type=int, default=0)
     parser.add_argument("--batch_size", type=int, default=16384)
     parser.add_argument("--precision", type=float, default=10.0)
+    parser.add_argument("--model_path", type=str, default=None)
     parser.add_argument("--fmin", type=float, default=50)
     parser.add_argument("--fmax", type=float, default=1100)
     parser.add_argument("--plot", action="store_true")
@@ -115,7 +149,7 @@ def main():
     audio_duration = audio.shape[-1] / sr
     
     # Create inference session
-    session = build_session(device_id=args.device_id)
+    session = build_session(device_id=args.device_id, model_path=args.model_path)
     
     # Time the prediction
     start_time = time.time()
